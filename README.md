@@ -69,11 +69,16 @@ The code for my perspective transform includes a function called `warper()`, whi
 def perspective_birds(img):
     image_size = (img.shape[1], img.shape[0])
     offset = 0
-    source = np.float32([[490, 460],[810, 460],
-                      [1250, 720],[40, 720]])
-    destination = np.float32([[0, 0], [1280, 0], 
-                     [1250, 720],[40, 720]])
-    M = cv2.getPerspectiveTransform(source, destination)
+    src = np.float32([[545, 460],
+                    [735, 460],
+                    [1280, 700],
+                    [0, 700]])
+
+    dst = np.float32([[0, 0],
+                     [1280, 0],
+                     [1280, 720],
+                     [0, 720]])
+    M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(img, M, image_size)
     return warped, M
 ```
@@ -82,10 +87,10 @@ This resulted in the following source and destination points:
 
 | Source        | Destination   | 
 |:-------------:|:-------------:| 
-| 590, 460      | 0, 0        | 
-| 810, 460      | 1280, 720      |
-| 1250, 720     | 1250, 720      |
-| 40, 720      | 40, 720        |
+| 545, 460      | 0, 0        | 
+| 735, 460      | 1280, 0      |
+| 1280, 700     | 1280, 720      |
+| 0, 700      | 0, 720        |
 
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
