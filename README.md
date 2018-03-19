@@ -1,5 +1,4 @@
-## Advanced Lane Finding
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+**Advanced Lane Finding Project**
 
 The goals / steps of this project are the following:
 
@@ -91,13 +90,21 @@ This resulted in the following source and destination points:
 I verified that my perspective transform was working as expected by drawing the `src` and `dst` points onto a test image and its warped counterpart to verify that the lines appear parallel in the warped image.
 
 ![alt text][bird-view]
-combine the color shreshold && gradient threshold && perspective transform
+Finaly, I only combine the color shreshold and perspective transform, but not gradient. It does better.
 ![alt text][bin_combin-pre]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
 Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
-
+1. Using the histogram of binary wraped img, then find the first lane line in the bottom column(peaks).
+`histogram = np.sum(img[img.shape[0]//2:,:], axis=0)`
+2. Using Sliding Window. I use the peak position as a starting point, then use slide window to find the lane line.
+3. Fit a second order polynomial.
+```python 
+left_fit = np.polyfit(lefty, leftx, 2)
+right_fit = np.polyfit(righty, rightx, 2)
+```
+Finally, the econd order polynomial is got as this:
 ![alt text][poly]
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
