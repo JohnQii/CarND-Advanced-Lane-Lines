@@ -137,25 +137,11 @@ def get_curve2_positon(left_fit, right_fit, ploty):
     dis2center = dis2center/road_width_pixel * 3.7
     
     y_eval = np.max(ploty)
-    quadratic_coeff = 3e-4 # arbitrary quadratic coefficient
-    # For each y position generate random x position within +/-50 pix
-    # of the line base position in each case (x=200 for left, and x=900 for right)
-    left_y0 = left_fit[0]*720**2 + left_fit[1]*720 + left_fit[2]
-    right_yo = right_fit[0]*720**2 + right_fit[1]*720 + right_fit[2]
-    leftx = np.array([left_y0 + (y**2)*quadratic_coeff + np.random.randint(-50, high=51) 
-                              for y in ploty])
-    rightx = np.array([right_yo + (y**2)*quadratic_coeff + np.random.randint(-50, high=51) 
-                                for y in ploty])
-    leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
-    rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
-    # Fit a second order polynomial to pixel positions in each fake lane line
-    left_fit = np.polyfit(ploty, leftx, 2)
-    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-    right_fit = np.polyfit(ploty, rightx, 2)
-    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    leftx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2] #pts on the left
+    rightx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2] #pts on the right
     ym_per_pix = 30/720 # meters per pixel in y dimension
     xm_per_pix = 3.7/road_width_pixel # meters per pixel in x dimension
-
+    
     # Fit new polynomials to x,y in world space
     left_fit_cr = np.polyfit(ploty*ym_per_pix, leftx*xm_per_pix, 2)
     right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
@@ -178,7 +164,7 @@ ere is an example of my result on a test image:
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_videoline.mp4)
+Here's a [link to my video result](./project_video-out.mp4)
 
 ---
 
