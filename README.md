@@ -113,20 +113,57 @@ Finally, the econd order polynomial is got as this:
 ![alt text][poly]
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
-
-I did this in lines # through # in my code in `Advance Line Detected.ipynb`
+1. position of the vehicle with respect to center:
 ```python
-def get_curve_position(left_fit, right_fit, ploty):
-    y_eval = np.max(ploty)
-    left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
-
-    right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])    
-    curver = (left_curverad + right_curverad)/2
     #get vehicle position
     right_x = right_fit[0]*720**2 + right_fit[1]*720 + right_fit[2]
     left_x = left_fit[0]*720**2 + left_fit[1]*720 + left_fit[2]     
-    position = abs((right_x + left_x))/2
-    dis2center = position - 640
+    center = abs((right_x + left_x))/2
+    dis2center = 640 - center # 1280/2=640, if dis2center>0: on the left of center
+    road_width_pixel =  abs(right_x - left_x)
+    print("road_width_pixel: ", road_width_pixel)
+    dis2center = dis2center/road_width_pixel * 3.7
+```
+2. I did this in lines # through # in my code in `Advance Line Detected.ipynb`
+```python
+def get_curve2_positon(left_fit, right_fit, ploty):
+    #get vehicle position
+    right_x = right_fit[0]*720**2 + right_fit[1]*720 + right_fit[2]
+    left_x = left_fit[0]*720**2 + left_fit[1]*720 + left_fit[2]     
+    center = abs((right_x + left_x))/2
+    dis2center = 640 - center # 1280/2=640, if dis2center>0: on the right of center
+    road_width_pixel =  abs(right_x - left_x)
+    print("road_width_pixel: ", road_width_pixel)
+    dis2center = dis2center/road_width_pixel * 3.7
+    
+    y_eval = np.max(ploty)
+    quadratic_coeff = 3e-4 # arbitrary quadratic coefficient
+    # For each y position generate random x position within +/-50 pix
+    # of the line base position in each case (x=200 for left, and x=900 for right)
+    left_y0 = left_fit[0]*720**2 + left_fit[1]*720 + left_fit[2]
+    right_yo = right_fit[0]*720**2 + right_fit[1]*720 + right_fit[2]
+    leftx = np.array([left_y0 + (y**2)*quadratic_coeff + np.random.randint(-50, high=51) 
+                              for y in ploty])
+    rightx = np.array([right_yo + (y**2)*quadratic_coeff + np.random.randint(-50, high=51) 
+                                for y in ploty])
+    leftx = leftx[::-1]  # Reverse to match top-to-bottom in y
+    rightx = rightx[::-1]  # Reverse to match top-to-bottom in y
+    # Fit a second order polynomial to pixel positions in each fake lane line
+    left_fit = np.polyfit(ploty, leftx, 2)
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fit = np.polyfit(ploty, rightx, 2)
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/road_width_pixel # meters per pixel in x dimension
+
+    # Fit new polynomials to x,y in world space
+    left_fit_cr = np.polyfit(ploty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
+    # Calculate the new radii of curvature
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    # Now our radius of curvature is in meters
+    curver = (left_curverad + right_curverad)/2
     return curver, dis2center
 ```
 
